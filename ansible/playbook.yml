@@ -1,0 +1,50 @@
+- name: Environment Setup
+  hosts: pxe
+  remote_user: root
+
+  tasks:
+    - name: Install Docker
+      apt:
+        pkg:
+          - docker.io
+          - docker-compose
+    - name: Install Qemu
+      apt:
+        pkg:
+          - qemu
+          - qemu-kvm
+    - name: Install Git
+      apt:
+        pkg:
+          - git
+
+
+- name: Prepare PXE
+  hosts: pxe
+  remote_user: root
+
+  tasks:       
+     - name: Clone Project
+       git:
+         - repo: https://github.com/DeMysteriisMundi/pxe-project
+         - dest: /opt/dedicated-project
+         - clone: yes
+         - update: no
+      
+    - name: Create VM
+      command: qemu-vm/qemu-vm.sh create
+        - chdir: /opt/dedicated-project/       
+
+
+- name: Start PXE
+  hosts: pxe
+  remote_user: root
+  
+    - name: Start Services
+      command: docker-compose up
+        - chdir: /opt/dedicated-project/
+        
+    - name: Start VM
+      command: qemu-vm/qemu-vm.sh start
+        - chdir: /opt/dedicated-project/
+

@@ -1,0 +1,49 @@
+version: "2.1"
+
+
+networks:
+  default:
+    name: pxe-net
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.40.0/24
+          ip_range: 192.168.40.0/24
+          gateway: 192.168.40.1
+
+
+services:
+  ics-dhcp:
+    container_name: alpine-dhcpd
+    build:
+      context: ./dhcpd/
+      args:
+        ALPINE_VERSION: ${ALPINE_VERSION:-latest}
+    networks:
+      default:
+        ipv4_address: 192.168.40.254
+
+  tftpd-hpa:
+    container_name: alpine-tftpd
+    build:
+      context: ./tftpd/
+      args:
+        ALPINE_VERSION: ${ALPINE_VERSION:-latest}
+    volumes:
+      - ./pxe/tftp/:/var/tftpboot/
+    networks:
+      default:
+        ipv4_address: 192.168.40.253
+
+  lighttpd:
+    container_name: alpine-httpd
+    build:
+      context: ./httpd/
+      args:
+        ALPINE_VERSION: ${ALPINE_VERSION:-latest}
+    volumes:
+      - ./pxe/http/:/var/www/
+    networks:
+      default:
+        ipv4_address: 192.168.40.252
+
