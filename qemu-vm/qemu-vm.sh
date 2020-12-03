@@ -18,7 +18,6 @@ read_cfg() {
     # NETWORK
     TAPIF='qemutap0'
     BRNAME=$(brctl show | grep -E "^br-[0-9a-z]+" -o)
-    BRNAME='br-5794e51a3741'
 
     # MANAGEMENT
     VNC='1'

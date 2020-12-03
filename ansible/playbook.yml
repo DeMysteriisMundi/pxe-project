@@ -8,12 +8,19 @@
         pkg:
           - docker.io
           - docker-compose
+
     - name: Install Qemu
       apt:
         pkg:
           - qemu
           - qemu-kvm
+
     - name: Install Git
+      apt:
+        pkg:
+          - git
+
+    - name: Install Screen
       apt:
         pkg:
           - git
@@ -24,27 +31,32 @@
   remote_user: root
 
   tasks:       
+     - name: Delete previouse project
+       command: rm -rf /opt/dedicated-project/
+
      - name: Clone Project
-       git:
-         - repo: https://github.com/DeMysteriisMundi/pxe-project
-         - dest: /opt/dedicated-project
-         - clone: yes
-         - update: no
+       command: git clone https://github.com/DeMysteriisMundi/pxe-project /opt/dedicated-project/
       
-    - name: Create VM
-      command: qemu-vm/qemu-vm.sh create
-        - chdir: /opt/dedicated-project/       
+     - name: Create VM
+       command: ./qemu-vm/qemu-vm.sh create
+       args:
+         chdir: /opt/dedicated-project/
 
 
 - name: Start PXE
   hosts: pxe
   remote_user: root
-  
+
+  tasks:
     - name: Start Services
-      command: docker-compose up
-        - chdir: /opt/dedicated-project/
+      command: docker-compose up -d
+      args:
+        chdir: /opt/dedicated-project/
         
     - name: Start VM
-      command: qemu-vm/qemu-vm.sh start
-        - chdir: /opt/dedicated-project/
+      command: ./qemu-vm/qemu-vm.sh start
+      async: 7200
+      poll: 0
+      args:
+        chdir: /opt/dedicated-project/
 
