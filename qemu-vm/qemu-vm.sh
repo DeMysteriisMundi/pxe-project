@@ -5,6 +5,7 @@ read_cfg() {
     # SCRIPT
     BDIR=$(dirname $(readlink -f $0))
     DDIR="$BDIR/drives"
+    BIDIR="$BDIR/bin"
 
     # VM
     MEM=4096
@@ -14,6 +15,7 @@ read_cfg() {
 
     # BOOT
     BORDER='ndc'
+    UEFI=0
 
     # NETWORK
     TAPIF='qemutap0'
@@ -61,6 +63,7 @@ get_start_args() {
     
     	# BOOT
     	"--boot-order") BORDER="${2:-$BORDER}" ;;
+	"--uefi") UEFI="${2:-$UEFI}" ;;
     
     	# NETWORK
     	"--if") TAPIF="${2:-$TAPIF}" ;;
@@ -97,6 +100,7 @@ Usage: qemu-vm <start|create>
         --cpu [num]             	        CPU amount. 			Ex. --cpu 2.
 	--memory [num]               		RAM in MB. 			Ex. --memory 4096.
 	--boot-order [str]			Use QEMU style. 		Ex. --boot-order 'ndc' is a network > cd-rom > disk.
+	--uefi					Boot in UEFI x32 or x64.	Ex. --uefi 64.
 	--if [str]				Interface name. 		Ex. --if qemutap0.
 	--br [str]				Bridge name VM connected to. 	Ex. --br br-5412
 	--novnc					VM started with VNC server. This option started VM in standard GUI.
@@ -132,6 +136,7 @@ start_vm() {
         -device e1000,netdev=qemunet0,mac=52:55:00:d1:55:01 \
         \
         -boot order=$BORDER \
+	$([[ $UEFI -eq 32 ]] || [[ $UEFI -eq 64 ]] && printf '%s' "-bios $BIDIR/bios$UEFI.bin") \
 	$(I=0; for DISK in "$DDIR"/*.img; do printf "%s\n" "-drive file=$(readlink -f $DISK),index=$I,media=disk"; I=$((I=I+1)); done) \
         \
         $([[ $VNC -eq 1 ]] && printf '%s' '-vnc :0 -monitor stdio')

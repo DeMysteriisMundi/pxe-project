@@ -43,6 +43,7 @@ services:
         ALPINE_VERSION: ${ALPINE_VERSION:-latest}
     volumes:
       - ./pxe/http/:/var/www/
+      - ./pxe/tftp/:/var/tftpboot/
     networks:
       default:
         ipv4_address: 192.168.40.252

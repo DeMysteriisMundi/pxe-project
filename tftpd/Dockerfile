@@ -6,8 +6,13 @@ FROM alpine:$ALPINE_VERSION
 RUN \
    apk add tftp-hpa
 
+RUN \
+   addgroup pxe && \
+   adduser pxe -G pxe -H -s /bin/false -D && \
+   chown pxe:pxe /var/tftpboot/
 
 WORKDIR /var/tftpboot/
+
 
 # Get the network access through the 69/udp
 EXPOSE 69/udp
